@@ -18,15 +18,47 @@ void GameLoop() {
 
     vector2 lastPosition = currentShoot.GetVector2('LastPosition');
 
-    currentShoot.AddToPositionXY((lastPosition+(lastPosition*0.25f)));
-    currentShoot.SetVector2('LastPosition', currentShoot.GetPositionXY());
+    vector2 newPosition = lastPosition+(lastPosition*0.25f);
+    
+    currentShoot.AddToPositionXY(newPosition);
+    currentShoot.SetVector2('LastPosition', newPosition);
   }
 }
 
 void ETHCallback_enemy(ETHEntity@ thisEntity) {
   float speed = UnitsPerSecond(20.0f);
+  float enemyRadius = 10.0f;
+  float shootRadius = 2.0f;
+
+  ETHEntityArray entities;
 
   thisEntity.AddToPositionX(speed);
+
+  GetEntitiesAroundEntity(thisEntity, entities);
+
+  for(uint i = 0; i < entities.size(); i++) {
+    ETHEntity@ shoot = entities[i];
+
+    if(shoot.GetEntityName() == 'shoot.ent') {
+      float dist = distance(thisEntity.GetPositionXY(), shoot.GetPositionXY());
+
+      //Shoot on target
+      if(dist < enemyRadius + shootRadius) {
+        //Decrease target resistence
+        thisEntity.AddToInt('resistence', -1);
+
+        //When target resistence is less or equal 0
+        if(thisEntity.GetInt('resistence') <= 0) {
+          //Target destroyed ;)
+          DeleteEntity(thisEntity);
+        }
+
+        //Remove shoot entity
+        DeleteEntity(shoot);
+        shootsArray.RemoveDeadEntities();
+      }
+    }
+  }
 }
 
 void ETHCallback_tower(ETHEntity@ thisEntity) {
@@ -38,7 +70,7 @@ void ETHCallback_tower(ETHEntity@ thisEntity) {
 
   for(uint i = 0; i < entities.size(); i++) {
     if(entities[i].GetEntityName() == 'enemy.ent') {
-      if(timeElapsed >= 200 && distance(thisEntity.GetPositionXY(), entities[i].GetPositionXY()) <= 260.0f) {
+      if(timeElapsed >= 500 && distance(thisEntity.GetPositionXY(), entities[i].GetPositionXY()) <= 260.0f) {
         timeElapsed = 0;
         FireFromTo(thisEntity, entities[i]);
       }
