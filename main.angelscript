@@ -8,6 +8,9 @@ ETHEntityArray shootsArray;
 
 void StartGame() {
   timeElapsed = 0;
+
+  LoadSoundEffect("soundfx/tower_shoot.mp3");
+  LoadSoundEffect("soundfx/explosion.mp3");
 }
 
 void GameLoop() {
@@ -50,6 +53,7 @@ void ETHCallback_enemy(ETHEntity@ thisEntity) {
         //When target resistence is less or equal 0
         if(thisEntity.GetInt('resistence') <= 0) {
           //Target destroyed ;)
+          PlaySample('soundfx/explosion.mp3');
           DeleteEntity(thisEntity);
         }
 
@@ -78,7 +82,6 @@ void ETHCallback_tower(ETHEntity@ thisEntity) {
   }
 }
 
-
 void FireFromTo(ETHEntity@ tower, ETHEntity@ enemy) {
   float speed = UnitsPerSecond(30.0f);  
   const int shootId = AddEntity('shoot.ent', vector3(tower.GetPositionXY().x, tower.GetPositionXY().y, 1.0f));
@@ -90,4 +93,5 @@ void FireFromTo(ETHEntity@ tower, ETHEntity@ enemy) {
   shoot.SetVector2('LastPosition', result*0.25f);
 
   shootsArray.Insert(shoot);
+  PlaySample('soundfx/tower_shoot.mp3');
 }
