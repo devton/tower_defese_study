@@ -20,6 +20,13 @@ void GameLoop() {
   timeElapsed = GetTime();
   enemyLastTimeAdded += GetLastFrameElapsedTime();
 
+  ETHInput@ input = GetInputHandle();
+
+  //Using GetTouchState to hangle touchscreen too :p
+  if(input.GetTouchState(0) == KS_HIT) {
+    AddEntity("tower.ent", vector3(input.GetCursorPos(), 0.0f), 0.0f);
+  }
+
   // Add new enemies after 10 seconds
   if(enemyLastTimeAdded >= enemyInterval) {
     AddEntity("enemy.ent", vector3(-4.0f, randF(GetScreenSize().y), 0.0f));
