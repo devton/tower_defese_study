@@ -6,6 +6,7 @@
 uint timeElapsed = 0;
 uint enemyLastTimeAdded = 0;
 uint enemyInterval = 10000;
+int shootInterval = 300;
 ETHEntityArray shootsArray;
 
 void StartGame() {
@@ -95,7 +96,7 @@ void ETHCallback_tower(ETHEntity@ thisEntity) {
       uint lastShootTime = thisEntity.GetUInt('LastShootTime');
       
       if(distance(thisEntity.GetPositionXY(), entities[i].GetPositionXY()) <= 260.0f) {
-        if(lastShootTime <= 0 || ((timeElapsed - lastShootTime) >= 500)) {
+        if(lastShootTime <= 0 || ((timeElapsed - lastShootTime) >= shootInterval)) {
           thisEntity.SetUInt('LastShootTime', timeElapsed);
           FireFromTo(thisEntity, entities[i]);
         }
