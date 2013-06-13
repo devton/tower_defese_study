@@ -14,8 +14,9 @@ void StartGame() {
 }
 
 void GameLoop() {
-  timeElapsed += GetLastFrameElapsedTime();
+  timeElapsed = GetTime();
 
+  // Update shoot entity position
   for(uint i = 0; i < shootsArray.size(); i++) {
     ETHEntity@ currentShoot = shootsArray[i];
 
@@ -66,24 +67,26 @@ void ETHCallback_enemy(ETHEntity@ thisEntity) {
 }
 
 void ETHCallback_tower(ETHEntity@ thisEntity) {
-  uint white = 0xFFFFFFFF;
-
   ETHEntityArray entities;
 
   GetEntitiesAroundEntity(thisEntity, entities);
 
   for(uint i = 0; i < entities.size(); i++) {
     if(entities[i].GetEntityName() == 'enemy.ent') {
-      if(timeElapsed >= 500 && distance(thisEntity.GetPositionXY(), entities[i].GetPositionXY()) <= 260.0f) {
-        timeElapsed = 0;
-        FireFromTo(thisEntity, entities[i]);
+      
+      uint lastShootTime = thisEntity.GetUInt('LastShootTime');
+      
+      if(distance(thisEntity.GetPositionXY(), entities[i].GetPositionXY()) <= 260.0f) {
+        if(lastShootTime <= 0 || ((timeElapsed - lastShootTime) >= 500)) {
+          thisEntity.SetUInt('LastShootTime', timeElapsed);
+          FireFromTo(thisEntity, entities[i]);
+        }
       }
     }
   }
 }
 
 void FireFromTo(ETHEntity@ tower, ETHEntity@ enemy) {
-  float speed = UnitsPerSecond(30.0f);  
   const int shootId = AddEntity('shoot.ent', vector3(tower.GetPositionXY().x, tower.GetPositionXY().y, 1.0f));
   ETHEntity@ shoot = SeekEntity(shootId);
 
