@@ -4,10 +4,13 @@
 }
 
 uint timeElapsed = 0;
+uint enemyLastTimeAdded = 0;
+uint enemyInterval = 10000;
 ETHEntityArray shootsArray;
 
 void StartGame() {
   timeElapsed = 0;
+  enemyLastTimeAdded = 0;
 
   LoadSoundEffect("soundfx/tower_shoot.mp3");
   LoadSoundEffect("soundfx/explosion.mp3");
@@ -15,6 +18,14 @@ void StartGame() {
 
 void GameLoop() {
   timeElapsed = GetTime();
+  enemyLastTimeAdded += GetLastFrameElapsedTime();
+
+  // Add new enemies after 10 seconds
+  if(enemyLastTimeAdded >= enemyInterval) {
+    AddEntity("enemy.ent", vector3(-4.0f, randF(GetScreenSize().y), 0.0f));
+    AddEntity("enemy.ent", vector3(-4.0f, randF(GetScreenSize().y), 0.0f));
+    enemyLastTimeAdded -= enemyInterval;
+  }
 
   // Update shoot entity position
   for(uint i = 0; i < shootsArray.size(); i++) {
