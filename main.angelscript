@@ -1,13 +1,15 @@
-﻿void main()
+﻿#include "TowerShoot.angelscript"
+
+void main()
 {
-	LoadScene("scenes/start.esc", "StartGame", "GameLoop");
+  LoadScene("scenes/start.esc", "StartGame", "GameLoop");
 }
 
+TowerShoot towerShoot;
 uint timeElapsed = 0;
 uint enemyLastTimeAdded = 0;
 uint enemyInterval = 10000;
 int shootInterval = 300;
-ETHEntityArray shootsArray;
 
 void StartGame() {
   timeElapsed = 0;
@@ -36,16 +38,7 @@ void GameLoop() {
   }
 
   // Update shoot entity position
-  for(uint i = 0; i < shootsArray.size(); i++) {
-    ETHEntity@ currentShoot = shootsArray[i];
-
-    vector2 lastPosition = currentShoot.GetVector2('LastPosition');
-
-    vector2 newPosition = lastPosition+(lastPosition*0.25f);
-    
-    currentShoot.AddToPositionXY(newPosition);
-    currentShoot.SetVector2('LastPosition', newPosition);
-  }
+  towerShoot.RefreshShootsPosition();
 }
 
 void ETHCallback_enemy(ETHEntity@ thisEntity) {
@@ -78,8 +71,7 @@ void ETHCallback_enemy(ETHEntity@ thisEntity) {
         }
 
         //Remove shoot entity
-        DeleteEntity(shoot);
-        shootsArray.RemoveDeadEntities();
+        towerShoot.RemoveShootFromArray(shoot);
       }
     }
   }
@@ -98,22 +90,10 @@ void ETHCallback_tower(ETHEntity@ thisEntity) {
       if(distance(thisEntity.GetPositionXY(), entities[i].GetPositionXY()) <= 260.0f) {
         if(lastShootTime <= 0 || ((timeElapsed - lastShootTime) >= shootInterval)) {
           thisEntity.SetUInt('LastShootTime', timeElapsed);
-          FireFromTo(thisEntity, entities[i]);
+          //FireFromTo(thisEntity, entities[i]);
+          towerShoot.Fire(thisEntity, entities[i]);
         }
       }
     }
   }
-}
-
-void FireFromTo(ETHEntity@ tower, ETHEntity@ enemy) {
-  const int shootId = AddEntity('shoot.ent', vector3(tower.GetPositionXY().x, tower.GetPositionXY().y, 1.0f));
-  ETHEntity@ shoot = SeekEntity(shootId);
-
-  vector2 result = enemy.GetPositionXY() - tower.GetPositionXY();
-  
-  shoot.AddToPositionXY(result*0.25f);
-  shoot.SetVector2('LastPosition', result*0.25f);
-
-  shootsArray.Insert(shoot);
-  PlaySample('soundfx/tower_shoot.mp3');
 }
